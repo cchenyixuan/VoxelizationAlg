@@ -34,9 +34,11 @@ class DisplayPort:
         self.view = self.camera()
         self.view_changed = False
 
+        self.update_voxel = False
+
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"C:\Users\cchen\PycharmProjects\VoxelizationAlg/H03_object.obj", 0.8)
+        self.demo = demo.Demo(r"D:\ProgramFiles\PycharmProject\VoxelizationAlg\H03_object.obj", 1.0)
         print(self.demo.voxel_buffer.shape[0]//8)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
@@ -55,7 +57,8 @@ class DisplayPort:
             glfw.poll_events()
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-            self.demo()
+            self.demo(update_voxel=self.update_voxel)
+            self.update_voxel = False
 
             if self.view_changed:
                 glUseProgram(self.demo.render_shader)
@@ -91,9 +94,11 @@ class DisplayPort:
             if button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS:
                 self.right_click = True
                 self.camera.mouse_right = True
+                self.update_voxel = True
             elif button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.RELEASE:
                 self.right_click = False
                 self.camera.mouse_right = False
+
             if button == glfw.MOUSE_BUTTON_MIDDLE and action == glfw.PRESS:
                 self.middle_click = True
                 self.camera.mouse_middle = True

@@ -6,6 +6,7 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 import time
 import re
 import pyrr
+from voxel_refine import Refine
 
 
 class Loader:
@@ -180,7 +181,7 @@ class Voxelization:
                 ["RightUpBack", "RightUpFront", "0", "0"],
             ]
 
-        output_buffer = np.vstack((voxel_matrices for voxel_matrices in domain_mat))
+        output_buffer = np.vstack([voxel_matrices for voxel_matrices in domain_mat])
 
         return output_buffer
 
@@ -235,7 +236,7 @@ class Voxelization:
             domain_mat[i][6, :] = np.array([left_up_back, left_up_front, right_down_back, right_down_front], dtype=np.int32)
             domain_mat[i][7, :] = np.array([right_up_back, right_up_front, 0, 0], dtype=np.int32)
 
-        return np.vstack((voxel_matrices for voxel_matrices in domain_mat))
+        return np.vstack([voxel_matrices for voxel_matrices in domain_mat])
 
     def create_voxels(self):
         lower_bound = self.lower_bound
@@ -303,7 +304,7 @@ class Voxelization:
                                                       dtype=np.int32)
                     voxels[voxel_id][7, :] = np.array([right_up_back, right_up_front, 0, 0], dtype=np.int32)
 
-        return np.vstack((voxel_matrices for voxel_matrices in voxels))
+        return np.vstack([voxel_matrices for voxel_matrices in voxels])
 
 
 class Demo:
@@ -383,13 +384,14 @@ class Demo:
         glEnableVertexAttribArray(0)
         glVertexAttribIPointer(0, 1, GL_INT, 4, ctypes.c_void_p(0))
 
-    def __call__(self, pause=False):
+    def __call__(self, pause=False, update_voxel=False):
         if self.need_init:
             self.need_init = False
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
             glUseProgram(self.compute_shader_0)
-            glDispatchCompute(self.voxel_buffer.shape[0] // 8, 1, 1)
+            total_invocations = self.voxel_buffer.shape[0] // 8
+            glDispatchCompute(total_invocations // 256, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
             buffer = np.frombuffer(glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, self.voxel_buffer.nbytes),
                                    dtype=np.int32)
@@ -406,12 +408,20 @@ class Demo:
                 voxel[0, 0] = tmp[voxel[0, 0] - 1]
                 for i in range(4, 30):
                     voxel[i // 4, i % 4] = tmp[voxel[i // 4, i % 4] - 1]
-                voxel[-1, -1] = 0
-                voxel[-1, -2] = 0
+                # voxel[-1, -1] = 0
+                # voxel[-1, -2] = 0
             buffer = np.array(new_buffer, dtype=np.int32)
             buffer = buffer.reshape((-1, 4))
             print(buffer.shape, "here")
             np.save("buffer.npy", buffer)
+            self.voxel_buffer = buffer
+            # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
+            glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+        if update_voxel:
+            self.voxel_buffer = Refine(self.voxel_buffer).refine()
+            glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+            self.need_init = True
+
 
         glBindVertexArray(self.vao)
 

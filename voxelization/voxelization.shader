@@ -18,7 +18,7 @@ layout(std430, binding=3) buffer Voxels{
 };
 
 
-layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=256, local_size_y=1, local_size_z=1) in;
 
 uint gid = gl_GlobalInvocationID.x;
 int voxel_index = int(gid)+1;
