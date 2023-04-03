@@ -61,7 +61,7 @@ class Voxelization:
         self.voxel_length = voxel_length
         s = time.time()
         self.voxel_buffer = self.space_division()
-        print("shao", time.time()-s)
+        print("shao", time.time() - s)
         s = time.time()
         self.voxel_buffer_chen = self.space_division_chen()
         print("chen 1", time.time() - s)
@@ -100,17 +100,17 @@ class Voxelization:
             # left, right, down, up, LeftDown, LeftUp, RightDown, RightUp
             if x_id == 0 and y_id == 0:  # pt == 0:  # left_down_corner
                 buf = np.array([0, index + 1, 0, index + x, 0, 0, 0, index + x + 1], dtype=np.int32)
-            elif x_id == x-1 and y_id == 0:  # pt == x - 1:  # right_down_corner
+            elif x_id == x - 1 and y_id == 0:  # pt == x - 1:  # right_down_corner
                 buf = np.array([index - 1, 0, 0, index + x, 0, index + x - 1, 0, 0], dtype=np.int32)
-            elif x_id == 0 and y_id == y-1:  # pt == x * y - x:  # left_up_corner
+            elif x_id == 0 and y_id == y - 1:  # pt == x * y - x:  # left_up_corner
                 buf = np.array([0, index + 1, index - x, 0, 0, 0, index - x + 1, 0], dtype=np.int32)
-            elif x_id == x-1 and y_id == y-1:  # pt == x * y - 1:  # right_up_corner
+            elif x_id == x - 1 and y_id == y - 1:  # pt == x * y - 1:  # right_up_corner
                 buf = np.array([index - 1, 0, index - x, 0, index - x - 1, 0, 0, 0], dtype=np.int32)
 
             elif y_id == 0:  # pt // x == 0:  # down row
                 buf = np.array([index - 1, index + 1, 0, index + x, 0, index + x - 1, 0, index + x + 1],
                                dtype=np.int32)
-            elif y_id == y-1:  # pt // x == y - 1:  # up row
+            elif y_id == y - 1:  # pt // x == y - 1:  # up row
                 buf = np.array([index - 1, index + 1, index - x, 0, index - x - 1, 0, index - x + 1, 0],
                                dtype=np.int32)
             elif pt % x == 0:  # left col
@@ -129,8 +129,12 @@ class Voxelization:
             if front != 0:
                 contents[1, :] = [0 if pos == 0 else pos + x * y for pos in buf]
 
-            left_back, right_back, down_back, up_back, left_down_back, left_up_back, right_down_back, right_up_back = contents[0, :]
-            left_front, right_front, down_front, up_front, left_down_front, left_up_front, right_down_front, right_up_front = contents[1, :]
+            left_back, right_back, down_back, up_back, left_down_back, left_up_back, right_down_back, right_up_back = contents[
+                                                                                                                      0,
+                                                                                                                      :]
+            left_front, right_front, down_front, up_front, left_down_front, left_up_front, right_down_front, right_up_front = contents[
+                                                                                                                              1,
+                                                                                                                              :]
 
             # contents = contents.T
             # contents = contents.reshape(16)
@@ -233,7 +237,8 @@ class Voxelization:
             domain_mat[i][3, :] = np.array([right_down, right_up, left_back, left_front], dtype=np.int32)
             domain_mat[i][4, :] = np.array([right_back, right_front, down_back, down_front], dtype=np.int32)
             domain_mat[i][5, :] = np.array([up_back, up_front, left_down_back, left_down_front], dtype=np.int32)
-            domain_mat[i][6, :] = np.array([left_up_back, left_up_front, right_down_back, right_down_front], dtype=np.int32)
+            domain_mat[i][6, :] = np.array([left_up_back, left_up_front, right_down_back, right_down_front],
+                                           dtype=np.int32)
             domain_mat[i][7, :] = np.array([right_up_back, right_up_front, 0, 0], dtype=np.int32)
 
         return np.vstack([voxel_matrices for voxel_matrices in domain_mat])
@@ -342,7 +347,8 @@ class Demo:
         self.sbo_voxels = glGenBuffers(1)
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, self.sbo_voxels)
-        glNamedBufferStorage(self.sbo_voxels, self.voxel_buffer.nbytes, self.voxel_buffer, GL_DYNAMIC_STORAGE_BIT)
+        glNamedBufferStorage(self.sbo_voxels, 1280000000, None, GL_DYNAMIC_STORAGE_BIT)
+        glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
         # compute shader
         self.need_init = True
 
@@ -374,8 +380,17 @@ class Demo:
                               dtype=np.float32))
         glUniform4fv(self.voxel_position_offset_loc, 1, self.voxel_position_offset)
 
+        # render_obj shader
+        self.obj_render_shader = compileProgram(compileShader(open("vertex.shader", "rb"), GL_VERTEX_SHADER),
+                                                compileShader(open("geometry.shader", "rb"), GL_GEOMETRY_SHADER),
+                                                compileShader(open("fragment.shader", "rb"), GL_FRAGMENT_SHADER))
+        glUseProgram(self.obj_render_shader)
+
+        self.obj_projection_loc = glGetUniformLocation(self.obj_render_shader, "projection")
+        self.obj_view_loc = glGetUniformLocation(self.obj_render_shader, "view")
+
         # vao of indices
-        self.indices_buffer = np.array([i for i in range(self.voxel_buffer.shape[0] // 8)], dtype=np.int32)
+        self.indices_buffer = np.array([i for i in range(10000000)], dtype=np.int32)
         self.vao = glGenVertexArrays(1)
         glBindVertexArray(self.vao)
         self.vbo = glGenBuffers(1)
@@ -391,9 +406,12 @@ class Demo:
 
             glUseProgram(self.compute_shader_0)
             total_invocations = self.voxel_buffer.shape[0] // 8
-            glDispatchCompute(total_invocations // 256, 1, 1)
+            glDispatchCompute(total_invocations, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
-            buffer = np.frombuffer(glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, self.voxel_buffer.nbytes),
+
+            tmp = np.zeros_like(self.voxel_buffer)
+            glGetNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, tmp)
+            buffer = np.frombuffer(tmp,
                                    dtype=np.int32)
             buffer = buffer.reshape((-1, 8, 4))
             count = 0
@@ -417,11 +435,24 @@ class Demo:
             self.voxel_buffer = buffer
             # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
             glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+
         if update_voxel:
             self.voxel_buffer = Refine(self.voxel_buffer).refine()
-            glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
-            self.need_init = True
 
+            glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+            glUseProgram(self.compute_shader_0)
+            self.voxel_length /= 2
+            self.voxel_position_offset -= np.array([self.voxel_length, self.voxel_length, self.voxel_length, 0.0],
+                                                   dtype=np.float32)
+            glUniform4fv(self.c_voxel_length_loc, 1,
+                         pyrr.Vector4([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length]))
+            glUniform4fv(self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
+            self.need_init = True
+            glUseProgram(self.render_shader)
+            glUniform4fv(self.voxel_length_loc, 1,
+                         np.array([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length],
+                                  dtype=np.float32))
+            glUniform4fv(self.voxel_position_offset_loc, 1, self.voxel_position_offset)
 
         glBindVertexArray(self.vao)
 
@@ -429,6 +460,9 @@ class Demo:
 
         glLineWidth(5)
         glDrawArrays(GL_POINTS, 0, self.voxel_buffer.shape[0] // 8)
+
+        glUseProgram(self.obj_render_shader)
+        glDrawArrays(GL_POINTS, 0, self.triangle_number)
 
 
 if __name__ == "__main__":

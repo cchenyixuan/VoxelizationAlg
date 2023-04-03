@@ -38,12 +38,14 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"D:\ProgramFiles\PycharmProject\VoxelizationAlg\H03_object.obj", 1.0)
+        self.demo = demo.Demo(r"..\untitled.obj", 0.3)
         print(self.demo.voxel_buffer.shape[0]//8)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
         glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.camera.view)
-        glUseProgram(self.demo.render_shader)
+        glUseProgram(self.demo.obj_render_shader)
+        glUniformMatrix4fv(self.demo.obj_projection_loc, 1, GL_FALSE, self.camera.projection)
+        glUniformMatrix4fv(self.demo.obj_view_loc, 1, GL_FALSE, self.camera.view)
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -63,6 +65,8 @@ class DisplayPort:
             if self.view_changed:
                 glUseProgram(self.demo.render_shader)
                 glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.view)
+                glUseProgram(self.demo.obj_render_shader)
+                glUniformMatrix4fv(self.demo.obj_view_loc, 1, GL_FALSE, self.view)
                 self.view_changed = False
 
             glClearColor(0.0, 0.0, 0.0, 1.0)

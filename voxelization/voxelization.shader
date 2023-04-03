@@ -18,7 +18,7 @@ layout(std430, binding=3) buffer Voxels{
 };
 
 
-layout(local_size_x=256, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 
 uint gid = gl_GlobalInvocationID.x;
 int voxel_index = int(gid)+1;
@@ -132,7 +132,7 @@ void Voxelization(int voxel_id){
         NegCount += rayTriangleIntersect(neg_ray, tri);
 
     }
-    if(PosCount*NegCount%2==1){
+    if((PosCount*NegCount)%2==1){
         Voxel[voxel_id*32+31]=1; // inside
         for(int j=4; j<30; ++j){
             Voxel[(Voxel[voxel_id*32+j]-1)*32+30]=1; // around
