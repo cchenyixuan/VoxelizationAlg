@@ -135,7 +135,15 @@ void Voxelization(int voxel_id){
     if((PosCount*NegCount)%2==1){
         Voxel[voxel_id*32+31]=1; // inside
         for(int j=4; j<30; ++j){
-            Voxel[(Voxel[voxel_id*32+j]-1)*32+30]=1; // around
+            if(Voxel[voxel_id*32+j]!=0){
+                Voxel[(Voxel[voxel_id*32+j]-1)*32+30]=1; // around
+            }
+
+            for(int k=4; k<30; ++k){
+                if(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]!=0){
+                    Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=1;// around around
+                }
+            }
         }
 
     }
