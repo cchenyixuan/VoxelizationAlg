@@ -146,6 +146,7 @@ void Voxelization(int voxel_id){
             }
         }
 
+
     }
     else{
         Voxel[voxel_id*32+31]=0; // outside
