@@ -402,7 +402,6 @@ class Demo:
     def __call__(self, pause=False, update_voxel=False):
         if self.need_init:
             self.need_init = False
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
             glUseProgram(self.compute_shader_0)
             total_invocations = self.voxel_buffer.shape[0] // 8
@@ -430,7 +429,7 @@ class Demo:
                 # voxel[-1, -2] = 0
             buffer = np.array(new_buffer, dtype=np.int32)
             buffer = buffer.reshape((-1, 4))
-            print(buffer.shape, "here")
+            print(buffer.shape[0]/8, "here")
             np.save("buffer.npy", buffer)
             self.voxel_buffer = buffer
             # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
@@ -457,11 +456,12 @@ class Demo:
         glBindVertexArray(self.vao)
 
         glUseProgram(self.render_shader)
-
-        glLineWidth(5)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        glLineWidth(2)
         glDrawArrays(GL_POINTS, 0, self.voxel_buffer.shape[0] // 8)
 
         glUseProgram(self.obj_render_shader)
+        # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glDrawArrays(GL_POINTS, 0, self.triangle_number)
 
 

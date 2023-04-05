@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"..\untitled.obj", 0.3)
+        self.demo = demo.Demo(r"..\untitled.obj", 0.4)
         print(self.demo.voxel_buffer.shape[0]//8)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
