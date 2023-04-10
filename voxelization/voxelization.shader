@@ -132,7 +132,7 @@ void Voxelization(int voxel_id){
         NegCount += rayTriangleIntersect(neg_ray, tri);
 
     }
-    if((PosCount*NegCount)%2==1){
+    if((PosCount*NegCount)%2==1){  // master of piece by Q.Shao: p%2==1&&q%2==1 <==> p*q%2==1
         Voxel[voxel_id*32+31]=1; // inside
         for(int j=4; j<30; ++j){
             if(Voxel[voxel_id*32+j]!=0){
@@ -141,7 +141,7 @@ void Voxelization(int voxel_id){
 
             for(int k=4; k<30; ++k){
                 if(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]!=0){
-                    Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=1;// around around
+                    Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=2;// around around
                 }
             }
         }

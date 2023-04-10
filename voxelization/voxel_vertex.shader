@@ -32,6 +32,9 @@ void main() {
         g_out.v_color = vec4(0.1, 0.1, 0.1, 0.0);
         g_out.v_pos = vec4(0.0, 0.0, 0.0, 1.0);
     }
+    else{
+        g_out.v_color = vec4(0.0, 1.0, 1.0, 0.8);
+    }
     
     /* if(Voxel[v_index*32+30]>=2){
         g_out.v_color = vec4(0.0, 1.0, 1.0, 1.0);

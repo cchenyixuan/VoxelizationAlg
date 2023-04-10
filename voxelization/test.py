@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"..\untitled.obj", 0.4)
+        self.demo = demo.Demo(r"..\untitled.obj", 0.32)
         print(self.demo.voxel_buffer.shape[0]//8)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
@@ -72,6 +72,14 @@ class DisplayPort:
             glClearColor(0.0, 0.0, 0.0, 1.0)
             glfw.swap_buffers(self.window)
         glfw.terminate()
+        return self.sph_voxel_buffer()
+
+    def sph_voxel_buffer(self):
+        buffer = np.zeros((self.demo.voxel_buffer.shape[0]//8, 182*4, 4), dtype=np.int32)
+        for step, tmp in enumerate(self.demo.voxel_buffer.reshape((-1, 8, 4))):
+            tmp[-1, -1], tmp[-1, -2] = 0, 0
+            buffer[step, :8] = tmp
+        return buffer, self.demo.voxel_position_offset
 
     def track_cursor(self):
         def cursor_position_clb(*args):
