@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"..\untitled.obj", 0.32)
+        self.demo = demo.Demo(r"C:\Users\cchen\PycharmProjects\sph-prototype\models/voxel_frame.obj", 0.08)
         print(self.demo.voxel_buffer.shape[0]//8)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
@@ -143,4 +143,4 @@ class DisplayPort:
 
 if __name__ == "__main__":
     dp = DisplayPort()
-    dp()
+    buffer, offset = dp()

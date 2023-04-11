@@ -57,7 +57,7 @@ bool isInRange(float x) {
 }
 
 //Check if a ray intersects a Tri, and return the intersection point and barycentric coordinates (if any)
-int rayTriangleIntersect(Ray ray, Tri tri) {
+ivec2 rayTriangleIntersect(Ray ray, Tri tri) {
     vec3 hitLocation;
     vec3 barycentricCoord;
     //Calculate the triangle's normal vector
@@ -70,14 +70,14 @@ int rayTriangleIntersect(Ray ray, Tri tri) {
 
     //If nd is zero, the ray is parallel or coplanar with the plane, and there are no intersections or infinitely many intersections
     if (isZero(nd)) {
-        return 0;
+        return ivec2(0, 0);
     }
 
     float t = dot(tri.v0 - ray.origin, tri.normal) / nd;
 
     //If t is negative, the intersection point is behind the ray's origin, and is not valid
     if (t < 0.0) {
-        return 0;
+        return ivec2(0, 0);
     }
 
     //Calculate the intersection point
@@ -99,10 +99,10 @@ int rayTriangleIntersect(Ray ray, Tri tri) {
 
     //Check if the intersection point is inside the triangle
     if(isInRange(barycentricCoord.x)&&isInRange(barycentricCoord.y)&&isInRange(barycentricCoord.z)){
-        return 1; //intersecting
+        return ivec2(1, 0); //intersecting
     }
     else{
-        return 0; //not intersecting
+        return ivec2(0, 0); //not intersecting
     }
 }
 
@@ -128,8 +128,9 @@ void Voxelization(int voxel_id){
         //if(ray.origin.y<=tri.max_y && tri.min_y<=ray.origin.y && ray.origin.z<=tri.max_z && tri.min_z<=ray.origin.z){
         //    ;
         //}
-        PosCount += rayTriangleIntersect(ray, tri);
-        NegCount += rayTriangleIntersect(neg_ray, tri);
+        PosCount += rayTriangleIntersect(ray, tri).x;
+        NegCount += rayTriangleIntersect(neg_ray, tri).x;
+
 
     }
     if((PosCount*NegCount)%2==1){  // master of piece by Q.Shao: p%2==1&&q%2==1 <==> p*q%2==1
@@ -141,7 +142,7 @@ void Voxelization(int voxel_id){
 
             for(int k=4; k<30; ++k){
                 if(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]!=0){
-                    Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=2;// around around
+                    Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=1;// around around
                 }
             }
         }
