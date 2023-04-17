@@ -23,6 +23,7 @@ class ParticleGenerator:
 
         :return:
         """
+        count = int(self.H ** 3 // (self.R ** 3 * np.pi * 4 / 3))
         ...
 
     def generate_boundary_particle(self):
