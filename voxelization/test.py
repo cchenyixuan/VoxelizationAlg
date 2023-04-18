@@ -38,8 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"C:\Users\cchen\PycharmProjects\sph-prototype\models/voxel_frame.obj", 0.08)
-        print(self.demo.voxel_buffer.shape[0]//8)
+        self.demo = demo.Demo(r"D:\ProgramFiles\PycharmProject\VoxelizationAlg\untitled.obj", 0.05)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
         glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.camera.view)
@@ -79,6 +78,8 @@ class DisplayPort:
         for step, tmp in enumerate(self.demo.voxel_buffer.reshape((-1, 8, 4))):
             tmp[-1, -1], tmp[-1, -2] = 0, 0
             buffer[step, :8] = tmp
+        # np.save("voxel_buffer.npy", buffer)
+        # np.save("voxel_offset.npy", self.demo.voxel_position_offset)
         return buffer, self.demo.voxel_position_offset
 
     def track_cursor(self):

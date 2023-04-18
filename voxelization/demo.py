@@ -60,17 +60,9 @@ class Voxelization:
         self.voxel_position_offset = self.lower_bound
         self.voxel_length = voxel_length
         s = time.time()
-        self.voxel_buffer = self.space_division()
-        print("shao", time.time() - s)
-        s = time.time()
-        self.voxel_buffer_chen = self.space_division_chen()
-        print("chen 1", time.time() - s)
-        s = time.time()
-        self.voxel_buffer_chen_2 = self.create_voxels()
-        print("chen 2", time.time() - s)
+        self.voxel_buffer = self.space_division_chen()
+        print("Voxel Generation cost: ", time.time() - s)
         print(f"Voxels: {self.voxel_buffer.shape[0] // 8}")
-
-    """"""
 
     def space_division(self):
         lower_bound = self.lower_bound
@@ -320,7 +312,7 @@ class Demo:
         self.vertex_buffer = self.voxel.vertex_buffer
         self.normal_buffer = self.voxel.normal_buffer
         self.triangle_buffer = self.voxel.triangle_buffer
-        self.voxel_buffer = self.voxel.voxel_buffer
+        self.voxel_buffer = self.voxel.voxel_buffer  # (_, 4)
         self.triangle_number = self.triangle_buffer.shape[0]
         self.voxel_position_offset = self.voxel.voxel_position_offset
 
@@ -347,8 +339,16 @@ class Demo:
         self.sbo_voxels = glGenBuffers(1)
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, self.sbo_voxels)
-        glNamedBufferStorage(self.sbo_voxels, 1280000000, None, GL_DYNAMIC_STORAGE_BIT)
+        glNamedBufferStorage(self.sbo_voxels, 1280000000, None, GL_DYNAMIC_STORAGE_BIT)  # 10'000'000 voxel capacity
         glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+
+        # voxel_attribute_buffer
+        self.sbo_voxel_attributes = glGenBuffers(1)
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxel_attributes)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, self.sbo_voxel_attributes)
+        glNamedBufferStorage(self.sbo_voxel_attributes, 160000000, None, GL_DYNAMIC_STORAGE_BIT)  # 10'000'000 voxel
+        glNamedBufferSubData(self.sbo_voxel_attributes, 0, 160000000, np.zeros((10000000, 4), dtype=np.float32))
+
         # compute shader
         self.need_init = True
 
@@ -405,54 +405,25 @@ class Demo:
 
             glUseProgram(self.compute_shader_0)
             total_invocations = self.voxel_buffer.shape[0] // 8
-            glDispatchCompute(total_invocations, 1, 1)
+            glDispatchCompute(total_invocations//64+1, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
-
-            tmp = np.zeros_like(self.voxel_buffer)
-            glGetNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, tmp)
-            buffer = np.frombuffer(tmp,
-                                   dtype=np.int32)
-            buffer = buffer.reshape((-1, 8, 4))
-            count = 0
-            tmp = [0 for _ in range(buffer.shape[0])]
-            new_buffer = []
-            for voxel in buffer:
-                if voxel[-1, -1] != 0 or voxel[-1, -2] != 0:
-                    count += 1
-                    new_buffer.append(voxel)
-                    tmp[voxel[0, 0] - 1] = count
-            for voxel in new_buffer:
-                voxel[0, 0] = tmp[voxel[0, 0] - 1]
-                for i in range(4, 30):
-                    voxel[i // 4, i % 4] = tmp[voxel[i // 4, i % 4] - 1]
-                # voxel[-1, -1] = 0
-                # voxel[-1, -2] = 0
-            buffer = np.array(new_buffer, dtype=np.int32)
-            buffer = buffer.reshape((-1, 4))
-            print(buffer.shape[0]/8, "here")
-            np.save("buffer.npy", buffer)
-            self.voxel_buffer = buffer
-            # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
-            glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+            self.simplify_voxel_buffer()
 
         if update_voxel:
             self.voxel_buffer = Refine(self.voxel_buffer).refine()
 
             glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
-            glUseProgram(self.compute_shader_0)
+            glNamedBufferSubData(self.sbo_voxel_attributes, 0, self.voxel_buffer.shape[0]*2,
+                                 np.zeros((self.voxel_buffer.shape[0]//8, 4), dtype=np.float32))  # clear attributes cache
             self.voxel_length /= 2
-            self.voxel_position_offset -= np.array([self.voxel_length, self.voxel_length, self.voxel_length, 0.0],
-                                                   dtype=np.float32)
-            glUniform4fv(self.c_voxel_length_loc, 1,
-                         pyrr.Vector4([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length]))
-            glUniform4fv(self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
+            self.voxel_position_offset -= np.array([self.voxel_length, self.voxel_length, self.voxel_length, 0.0], dtype=np.float32)
+            glProgramUniform4fv(self.compute_shader_0, self.c_voxel_length_loc, 1, pyrr.Vector4([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length]))
+            glProgramUniform4fv(self.compute_shader_0, self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
             self.need_init = True
-            glUseProgram(self.render_shader)
-            glUniform4fv(self.voxel_length_loc, 1,
-                         np.array([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length],
-                                  dtype=np.float32))
-            glUniform4fv(self.voxel_position_offset_loc, 1, self.voxel_position_offset)
+            glProgramUniform4fv(self.render_shader, self.voxel_length_loc, 1, np.array([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length], dtype=np.float32))
+            glProgramUniform4fv(self.render_shader, self.voxel_position_offset_loc, 1, self.voxel_position_offset)
 
+        # render part
         glBindVertexArray(self.vao)
 
         glUseProgram(self.render_shader)
@@ -463,6 +434,48 @@ class Demo:
         glUseProgram(self.obj_render_shader)
         # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         glDrawArrays(GL_POINTS, 0, self.triangle_number)
+
+    def simplify_voxel_buffer(self):
+        # arrange empty buffer with same size of self.voxel_buffer
+        voxel_buffer = np.zeros_like(self.voxel_buffer)
+        voxel_attribute_buffer = np.zeros((self.voxel_buffer.shape[0]//8, 4), dtype=np.float32)
+        # pull computed data back from GPU
+        glGetNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, voxel_buffer)
+        glGetNamedBufferSubData(self.sbo_voxel_attributes, 0, voxel_attribute_buffer.nbytes, voxel_attribute_buffer)
+        # translate GPU buffer to int32 readable numpy array and reshape to (n, 8, 4)
+        buffer = np.frombuffer(voxel_buffer, dtype=np.int32).reshape((-1, 8, 4))
+        attribute_buffer = np.frombuffer(voxel_attribute_buffer, dtype=np.float32).reshape((-1, 4))
+        # pointer for voxels selected
+        count = 0
+        # create an index array of size n
+        index_array = [0 for _ in range(buffer.shape[0])]
+
+        new_buffer = []
+        new_attribute_buffer = []
+        for step, voxel in enumerate(buffer):
+            # if voxel[-1, -1] != 0 or voxel[-1, -2] != 0:
+            if sum(attribute_buffer[step]) != 0:
+                count += 1
+                new_buffer.append(voxel)
+                new_attribute_buffer.append(attribute_buffer[step])
+                index_array[voxel[0, 0] - 1] = count
+        for voxel in new_buffer:
+            # set new index
+            voxel[0, 0] = index_array[voxel[0, 0] - 1]
+            for i in range(4, 30):
+                voxel[i // 4, i % 4] = index_array[voxel[i // 4, i % 4] - 1]
+            # clear voxel classification
+            voxel[-1, -1] = 0
+            voxel[-1, -2] = 0
+        buffer = np.array(new_buffer, dtype=np.int32)
+        buffer = buffer.reshape((-1, 4))
+        print(f"Total Voxels: {buffer.shape[0]//8}, with size {self.voxel_length}x{self.voxel_length}x{self.voxel_length}")
+        # np.save("buffer.npy", buffer)
+        self.voxel_buffer = buffer
+        # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
+        glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
+        attri_tmp = np.array(new_attribute_buffer, dtype=np.float32)
+        glNamedBufferSubData(self.sbo_voxel_attributes, 0, attri_tmp.nbytes, attri_tmp)
 
 
 if __name__ == "__main__":

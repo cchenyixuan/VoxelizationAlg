@@ -20,10 +20,12 @@ class ParticleGenerator:
         |____*_|
         |_*____|
         Particles inside the voxels marked as internal should be uniformly separated.
+        Maximum particle inside a voxel should be less than the capacity 60*16.
 
         :return:
         """
-        count = int(self.H ** 3 // (self.R ** 3 * np.pi * 4 / 3))
+        count = int(self.H**3//(self.R**3*np.pi*4/3))
+
         ...
 
     def generate_boundary_particle(self):

@@ -16,9 +16,13 @@ layout(std430, binding=3) buffer Voxels{
     // index, x, y, z, topology.., 0, 0  32 integers
     int Voxel[];
 };
+layout(std430, binding=4) buffer VoxelAttributes{
+    // 4 attributes
+    vec4 VoxelAttribute[];
+};
 
 
-layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
 
 //uint gid = gl_GlobalInvocationID.x;
 uint x_length = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
@@ -167,14 +171,17 @@ void Voxelization(int voxel_id){
     }
     if((PosCount*NegCount)%2==1){  // master of piece by Q.Shao: p%2==1&&q%2==1 <==> p*q%2==1
         Voxel[voxel_id*32+31]=1; // inside
+        VoxelAttribute[voxel_id].x = 1.0;
         for(int j=4; j<30; ++j){
             if(Voxel[voxel_id*32+j]!=0){
                 Voxel[(Voxel[voxel_id*32+j]-1)*32+30]=1; // around
+                VoxelAttribute[(Voxel[voxel_id*32+j]-1)].y = 1.0;
             }
 
             for(int k=4; k<30; ++k){
                 if(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]!=0){
                     Voxel[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)*32+30]=1;// around around
+                    VoxelAttribute[(Voxel[(Voxel[voxel_id*32+j]-1)*32+k]-1)].z = 1.0;
                 }
             }
         }
@@ -183,6 +190,7 @@ void Voxelization(int voxel_id){
     }
     else{
         Voxel[voxel_id*32+31]=0; // outside
+        VoxelAttribute[voxel_id].x = 0.0;
     }
     // if(voxel_id%1000==0){
     //     for(int j=4; j<30; ++j){
@@ -192,5 +200,6 @@ void Voxelization(int voxel_id){
 }
 
 void main(){
+
     Voxelization(voxel_index-1);
 }
