@@ -359,32 +359,26 @@ class Demo:
         self.c_voxel_length_loc = glGetUniformLocation(self.compute_shader_0, "voxel_length")
         self.c_triangle_number_loc = glGetUniformLocation(self.compute_shader_0, "triangle_number")
         self.c_voxel_position_offset_loc = glGetUniformLocation(self.compute_shader_0, "voxel_position_offset")
-        glUseProgram(self.compute_shader_0)
-        glUniform4fv(self.c_voxel_length_loc, 1,
-                     pyrr.Vector4([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length]))
-        glUniform1i(self.c_triangle_number_loc, self.triangle_number)
-        glUniform4fv(self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
+        glProgramUniform1f(self.compute_shader_0, self.c_voxel_length_loc, self.voxel_length)
+        glProgramUniform1i(self.compute_shader_0, self.c_triangle_number_loc, self.triangle_number)
+        glProgramUniform4fv(self.compute_shader_0, self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
         # render shader
         self.render_shader = compileProgram(compileShader(open("voxel_vertex.shader", "rb"), GL_VERTEX_SHADER),
                                             compileShader(open("voxel_geometry.shader", "rb"), GL_GEOMETRY_SHADER),
                                             compileShader(open("voxel_fragment.shader", "rb"), GL_FRAGMENT_SHADER))
-        glUseProgram(self.render_shader)
 
         self.projection_loc = glGetUniformLocation(self.render_shader, "projection")
         self.view_loc = glGetUniformLocation(self.render_shader, "view")
         self.voxel_length_loc = glGetUniformLocation(self.render_shader, "voxel_length")
         self.voxel_position_offset_loc = glGetUniformLocation(self.render_shader, "voxel_position_offset")
 
-        glUniform4fv(self.voxel_length_loc, 1,
-                     np.array([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length],
-                              dtype=np.float32))
-        glUniform4fv(self.voxel_position_offset_loc, 1, self.voxel_position_offset)
+        glProgramUniform1f(self.render_shader, self.voxel_length_loc, self.voxel_length)
+        glProgramUniform4fv(self.render_shader, self.voxel_position_offset_loc, 1, self.voxel_position_offset)
 
         # render_obj shader
         self.obj_render_shader = compileProgram(compileShader(open("vertex.shader", "rb"), GL_VERTEX_SHADER),
                                                 compileShader(open("geometry.shader", "rb"), GL_GEOMETRY_SHADER),
                                                 compileShader(open("fragment.shader", "rb"), GL_FRAGMENT_SHADER))
-        glUseProgram(self.obj_render_shader)
 
         self.obj_projection_loc = glGetUniformLocation(self.obj_render_shader, "projection")
         self.obj_view_loc = glGetUniformLocation(self.obj_render_shader, "view")
@@ -417,10 +411,10 @@ class Demo:
                                  np.zeros((self.voxel_buffer.shape[0]//8, 4), dtype=np.float32))  # clear attributes cache
             self.voxel_length /= 2
             self.voxel_position_offset -= np.array([self.voxel_length, self.voxel_length, self.voxel_length, 0.0], dtype=np.float32)
-            glProgramUniform4fv(self.compute_shader_0, self.c_voxel_length_loc, 1, pyrr.Vector4([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length]))
+            glProgramUniform1f(self.compute_shader_0, self.c_voxel_length_loc, self.voxel_length)
             glProgramUniform4fv(self.compute_shader_0, self.c_voxel_position_offset_loc, 1, self.voxel_position_offset)
             self.need_init = True
-            glProgramUniform4fv(self.render_shader, self.voxel_length_loc, 1, np.array([self.voxel_length, self.voxel_length, self.voxel_length, self.voxel_length], dtype=np.float32))
+            glProgramUniform1f(self.render_shader, self.voxel_length_loc, self.voxel_length)
             glProgramUniform4fv(self.render_shader, self.voxel_position_offset_loc, 1, self.voxel_position_offset)
 
         # render part

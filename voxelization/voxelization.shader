@@ -60,7 +60,7 @@ const uvec3 gl_WorkGroupSize;   // GLSL ≥ 4.30
 int voxel_index = int(gid)+1;
 float voxel_index_float = float(voxel_index);
 
-uniform vec4 voxel_length;
+uniform float voxel_length;
 uniform int triangle_number;
 uniform vec4 voxel_position_offset;
 
@@ -144,10 +144,10 @@ ivec2 rayTriangleIntersect(Ray ray, Tri tri) {
 
 void Voxelization(int voxel_id){
     Ray ray;
-    ray.origin = voxel_position_offset.xyz+vec3(float(Voxel[voxel_id*32+1])*voxel_length.x,float(Voxel[voxel_id*32+2])*voxel_length.x,float(Voxel[voxel_id*32+3])*voxel_length.x);
+    ray.origin = voxel_position_offset.xyz+vec3(float(Voxel[voxel_id*32+1])*voxel_length,float(Voxel[voxel_id*32+2])*voxel_length,float(Voxel[voxel_id*32+3])*voxel_length);
     ray.direction = vec3(1.0, 0.0, 0.0);
     Ray neg_ray;
-    neg_ray.origin = voxel_position_offset.xyz+vec3(float(Voxel[voxel_id*32+1])*voxel_length.x,float(Voxel[voxel_id*32+2])*voxel_length.x,float(Voxel[voxel_id*32+3])*voxel_length.x);
+    neg_ray.origin = voxel_position_offset.xyz+vec3(float(Voxel[voxel_id*32+1])*voxel_length,float(Voxel[voxel_id*32+2])*voxel_length,float(Voxel[voxel_id*32+3])*voxel_length);
     neg_ray.direction = vec3(-1.0, 0.0, 0.0);
     int PosCount = 0;
     int NegCount = 0;

@@ -15,21 +15,21 @@ layout(std430, binding=3) buffer Voxels{
 
 uniform mat4 projection;
 uniform mat4 view;
-uniform vec4 voxel_length;
+uniform float voxel_length;
 uniform vec4 voxel_position_offset;
 
 void CreateCube(){
     // center of voxel
     vec4 center = g_in[0].v_pos;
     // 8 vertices
-    vec4 p4 = vec4(center.x-voxel_length.x/2, center.y-voxel_length.x/2, center.z-voxel_length.x/2, 1.0);
-    vec4 p3 = vec4(center.x+voxel_length.x/2, center.y-voxel_length.x/2, center.z-voxel_length.x/2, 1.0);
-    vec4 p8 = vec4(center.x+voxel_length.x/2, center.y-voxel_length.x/2, center.z+voxel_length.x/2, 1.0);
-    vec4 p7 = vec4(center.x-voxel_length.x/2, center.y-voxel_length.x/2, center.z+voxel_length.x/2, 1.0);
-    vec4 p6 = vec4(center.x-voxel_length.x/2, center.y+voxel_length.x/2, center.z+voxel_length.x/2, 1.0);
-    vec4 p2 = vec4(center.x-voxel_length.x/2, center.y+voxel_length.x/2, center.z-voxel_length.x/2, 1.0);
-    vec4 p1 = vec4(center.x+voxel_length.x/2, center.y+voxel_length.x/2, center.z-voxel_length.x/2, 1.0);
-    vec4 p5 = vec4(center.x+voxel_length.x/2, center.y+voxel_length.x/2, center.z+voxel_length.x/2, 1.0);
+    vec4 p4 = vec4(center.x-voxel_length/2, center.y-voxel_length/2, center.z-voxel_length/2, 1.0);
+    vec4 p3 = vec4(center.x+voxel_length/2, center.y-voxel_length/2, center.z-voxel_length/2, 1.0);
+    vec4 p8 = vec4(center.x+voxel_length/2, center.y-voxel_length/2, center.z+voxel_length/2, 1.0);
+    vec4 p7 = vec4(center.x-voxel_length/2, center.y-voxel_length/2, center.z+voxel_length/2, 1.0);
+    vec4 p6 = vec4(center.x-voxel_length/2, center.y+voxel_length/2, center.z+voxel_length/2, 1.0);
+    vec4 p2 = vec4(center.x-voxel_length/2, center.y+voxel_length/2, center.z-voxel_length/2, 1.0);
+    vec4 p1 = vec4(center.x+voxel_length/2, center.y+voxel_length/2, center.z-voxel_length/2, 1.0);
+    vec4 p5 = vec4(center.x+voxel_length/2, center.y+voxel_length/2, center.z+voxel_length/2, 1.0);
 
     // vertex color
     v_color = g_in[0].v_color;
