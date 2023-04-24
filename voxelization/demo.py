@@ -313,6 +313,7 @@ class Demo:
         self.normal_buffer = self.voxel.normal_buffer
         self.triangle_buffer = self.voxel.triangle_buffer
         self.voxel_buffer = self.voxel.voxel_buffer  # (_, 4)
+        self.voxel_attribute_buffer = np.zeros((self.voxel_buffer.shape[0], 4), dtype=np.float32)
         self.triangle_number = self.triangle_buffer.shape[0]
         self.voxel_position_offset = self.voxel.voxel_position_offset
 
@@ -399,7 +400,8 @@ class Demo:
 
             glUseProgram(self.compute_shader_0)
             total_invocations = self.voxel_buffer.shape[0] // 8
-            glDispatchCompute(total_invocations//64+1, 1, 1)
+            # invocations are 8 times last session
+            glDispatchCompute(total_invocations, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
             self.simplify_voxel_buffer()
 
@@ -468,8 +470,8 @@ class Demo:
         self.voxel_buffer = buffer
         # glBindBuffer(GL_SHADER_STORAGE_BUFFER, self.sbo_voxels)
         glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
-        attri_tmp = np.array(new_attribute_buffer, dtype=np.float32)
-        glNamedBufferSubData(self.sbo_voxel_attributes, 0, attri_tmp.nbytes, attri_tmp)
+        self.voxel_attribute_buffer = np.array(new_attribute_buffer, dtype=np.float32)
+        glNamedBufferSubData(self.sbo_voxel_attributes, 0, self.voxel_attribute_buffer.nbytes, self.voxel_attribute_buffer)
 
 
 if __name__ == "__main__":

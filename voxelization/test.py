@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"D:\ProgramFiles\PycharmProject\VoxelizationAlg\untitled.obj", 0.05)
+        self.demo = demo.Demo(r"..\H03_object_rescale.obj", 0.08)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
         glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.camera.view)
@@ -80,7 +80,7 @@ class DisplayPort:
             buffer[step, :8] = tmp
         # np.save("voxel_buffer.npy", buffer)
         # np.save("voxel_offset.npy", self.demo.voxel_position_offset)
-        return buffer, self.demo.voxel_position_offset
+        return buffer, self.demo.voxel_position_offset, self.demo.voxel_attribute_buffer
 
     def track_cursor(self):
         def cursor_position_clb(*args):
@@ -144,4 +144,8 @@ class DisplayPort:
 
 if __name__ == "__main__":
     dp = DisplayPort()
-    buffer, offset = dp()
+    buffer, offset, attribute_buffer = dp()
+    # from ParticleGenerator import ParticleGenerator
+    # pg = ParticleGenerator(buffer, offset, dp.demo.voxel_length, dp.demo.voxel_length/2, attribute_buffer)
+    # pg.generate_internal_particle()
+

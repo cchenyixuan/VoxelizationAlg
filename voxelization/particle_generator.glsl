@@ -53,60 +53,34 @@ int triple32(int x){
     x ^= x >> 14;
     return x;
 }
+// buffer
+vec3 x_available[7];
+vec3 y_available[7];
+vec3 z_available[7];
+vec3 available_position[343];
 
 void CreateParticle(){
-    vec3 x_available[7];
-    vec3 y_available[7];
-    vec3 z_available[7];
-    if(particle_quantity<28){
-        x_available[0] = vec3(-1, 0, 0);
-        x_available[1] = vec3(0, 0, 0);
-        x_available[2] = vec3(1, 0, 0);
-        y_available[0] = vec3(0, -1, 0);
-        y_available[1] = vec3(0, 0, 0);
-        y_available[2] = vec3(0, 1, 0);
-        z_available[0] = vec3(0, 0, -1);
-        z_available[1] = vec3(0, 0, 0);
-        z_available[2] = vec3(0, 0, 1);
-    }
-    else if(particle_quantity<126){
-        x_available[0] = vec3(-2, 0, 0);
+    if(particle_quantity < 344){
+        x_available[0] = vec3(0, 0, 0);
         x_available[1] = vec3(-1, 0, 0);
-        x_available[2] = vec3(0, 0, 0);
-        x_available[3] = vec3(1, 0, 0);
+        x_available[2] = vec3(1, 0, 0);
+        x_available[3] = vec3(-2, 0, 0);
         x_available[4] = vec3(2, 0, 0);
-        y_available[0] = vec3(0, -2, 0);
-        y_available[1] = vec3(0, -1, 0);
-        y_available[2] = vec3(0, 0, 0);
-        y_available[3] = vec3(0, 1, 0);
-        y_available[4] = vec3(0, 2, 0);
-        z_available[0] = vec3(0, 0, -2);
-        z_available[1] = vec3(0, 0, -1);
-        z_available[2] = vec3(0, 0, 0);
-        z_available[3] = vec3(0, 0, 1);
-        z_available[4] = vec3(0, 0, 2);
-    }
-    else if(particle_quantity < 344){
-        x_available[0] = vec3(-3, 0, 0);
-        x_available[1] = vec3(-2, 0, 0);
-        x_available[2] = vec3(-1, 0, 0);
-        x_available[3] = vec3(0, 0, 0);
-        x_available[4] = vec3(1, 0, 0);
-        x_available[5] = vec3(2, 0, 0);
+        x_available[5] = vec3(-3, 0, 0);
         x_available[6] = vec3(3, 0, 0);
-        y_available[0] = vec3(0, -3, 0);
-        y_available[1] = vec3(0, -2, 0);
-        y_available[2] = vec3(0, -1, 0);
-        y_available[3] = vec3(0, 0, 0);
-        y_available[4] = vec3(0, 1, 0);
-        y_available[5] = vec3(0, 2, 0);
+        y_available[0] = vec3(0, 0, 0);
+        y_available[1] = vec3(0, -1, 0);
+        y_available[2] = vec3(0, 1, 0);
+        y_available[3] = vec3(0, -2, 0);
+        y_available[4] = vec3(0, 2, 0);
+        y_available[5] = vec3(0, -3, 0);
         y_available[6] = vec3(0, 3, 0);
-        z_available[0] = vec3(0, 0, -3);
-        z_available[1] = vec3(0, 0, -2);
-        z_available[2] = vec3(0, 0, -1);
-        z_available[3] = vec3(0, 0, 0);
-        z_available[4] = vec3(0, 0, 1);
-        z_available[5] = vec3(0, 0, 2);
+        z_available[0] = vec3(0, 0, 0);
+        z_available[1] = vec3(0, 0, -1);
+        z_available[2] = vec3(0, 0, 1);
+        z_available[3] = vec3(0, 0, -2);
+        z_available[4] = vec3(0, 0, 2);
+        z_available[5] = vec3(0, 0, -3);
         z_available[6] = vec3(0, 0, 3);
     }
     else{

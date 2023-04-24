@@ -6,9 +6,10 @@ class ParticleGenerator:
     A particle generator for SPH Fluid simulator
     """
 
-    def __init__(self, voxel_buffer, voxel_offset, smooth_length, particle_radius):
+    def __init__(self, voxel_buffer, voxel_offset, smooth_length, particle_radius, voxel_attribute_buffer):
         self.voxel_buffer = voxel_buffer
         self.voxel_offset = voxel_offset
+        self.voxel_attribute_buffer = voxel_attribute_buffer
         self.H = smooth_length  # same as voxel length
         self.R = particle_radius
         self.D = 2 * self.R
@@ -18,6 +19,7 @@ class ParticleGenerator:
 
     def generate_internal_particle(self):
         """
+        voxel_buffer is in shape [n, r, c]
         |_*____|
         |____*_|
         |_*____|
@@ -54,11 +56,16 @@ class ParticleGenerator:
         np.random.shuffle(available_position)
 
         particles = []
-        for voxel in self.voxel_buffer:
-            center = self.voxel_offset + voxel[0, 1:] * self.H
-            particles.append(np.array(available_position[:count]) + center)
-            np.random.shuffle(available_position)  # optional
-        return np.vstack(particles)
+        for attribute, voxel in zip(self.voxel_attribute_buffer, self.voxel_buffer):
+            if attribute[0] == 1.0:
+                center = self.voxel_offset[:3] + voxel[0, 1:] * self.H
+                particles.append(np.array(available_position[:count]) + center)
+                np.random.shuffle(available_position)  # optional
+        particles = np.vstack(particles)
+        with open(r"domain.obj", "w") as f:
+            for particle in particles:
+                f.write(f"v {particle[0]} {particle[1]} {particle[2]}\n")
+        return
 
     def generate_boundary_particle(self):
         """Beta Version"""

@@ -22,7 +22,7 @@ layout(std430, binding=4) buffer VoxelAttributes{
 };
 
 
-layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 
 //uint gid = gl_GlobalInvocationID.x;
 uint x_length = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
