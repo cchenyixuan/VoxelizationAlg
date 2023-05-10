@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"..\H03_object_rescale.obj", 0.08)
+        self.demo = demo.Demo(r"D:\ProgramFiles\PycharmProject\SPH-prototype\models\voxel_for.obj", 0.04)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
         glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.camera.view)

@@ -401,7 +401,7 @@ class Demo:
             glUseProgram(self.compute_shader_0)
             total_invocations = self.voxel_buffer.shape[0] // 8
             # invocations are 8 times last session
-            glDispatchCompute(total_invocations, 1, 1)
+            glDispatchCompute(total_invocations//8, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
             self.simplify_voxel_buffer()
 
@@ -472,6 +472,11 @@ class Demo:
         glNamedBufferSubData(self.sbo_voxels, 0, self.voxel_buffer.nbytes, self.voxel_buffer)
         self.voxel_attribute_buffer = np.array(new_attribute_buffer, dtype=np.float32)
         glNamedBufferSubData(self.sbo_voxel_attributes, 0, self.voxel_attribute_buffer.nbytes, self.voxel_attribute_buffer)
+
+    def arrange_workgroup(self):
+        total_invocations = self.voxel_buffer.shape[0] // 8
+        # a*b*c * x*y*z = total_invocation
+
 
 
 if __name__ == "__main__":
