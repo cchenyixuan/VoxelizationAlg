@@ -459,7 +459,8 @@ class Demo:
             # set new index
             voxel[0, 0] = index_array[voxel[0, 0] - 1]
             for i in range(4, 30):
-                voxel[i // 4, i % 4] = index_array[voxel[i // 4, i % 4] - 1]
+                # empty blocks should remain empty
+                voxel[i // 4, i % 4] = index_array[voxel[i // 4, i % 4] - 1] if voxel[i // 4, i % 4] != 0 else 0
             # clear voxel classification
             voxel[-1, -1] = 0
             voxel[-1, -2] = 0
@@ -476,7 +477,6 @@ class Demo:
     def arrange_workgroup(self):
         total_invocations = self.voxel_buffer.shape[0] // 8
         # a*b*c * x*y*z = total_invocation
-
 
 
 if __name__ == "__main__":
