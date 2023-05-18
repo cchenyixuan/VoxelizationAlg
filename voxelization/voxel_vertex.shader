@@ -46,6 +46,9 @@ void main() {
         g_out.v_color = vec4(0.1, 0.1, 0.1, 0.0);
         g_out.v_pos = vec4(0.0, 0.0, 0.0, 1.0);
     }
+    if(VoxelAttribute[v_index].w==1.0){
+        g_out.v_color = vec4(0.0, 1.0, 1.0, 0.8);
+    }
     /*if(Voxel[v_index*32+31]==1 && Voxel[v_index*32+30]==1){
         g_out.v_color = vec4(1.0, 0.0, 0.0, 0.8);
         for(int j=4; j<30; ++j){

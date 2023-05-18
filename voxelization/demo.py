@@ -357,6 +357,10 @@ class Demo:
         self.compute_shader_0 = compileProgram(
             compileShader(open("voxelization.shader", "rb"), GL_COMPUTE_SHADER))
 
+        # compute shader 1
+        self.compute_shader_1 = compileProgram(
+            compileShader(open("voxelization_classify_voxels.shader", "rb"), GL_COMPUTE_SHADER))
+
         self.c_voxel_length_loc = glGetUniformLocation(self.compute_shader_0, "voxel_length")
         self.c_triangle_number_loc = glGetUniformLocation(self.compute_shader_0, "triangle_number")
         self.c_voxel_position_offset_loc = glGetUniformLocation(self.compute_shader_0, "voxel_position_offset")
@@ -403,7 +407,17 @@ class Demo:
             # invocations are 8 times last session
             glDispatchCompute(total_invocations//8, 1, 1)
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+
             self.simplify_voxel_buffer()
+
+            # calculate voxel_attribute_buffer.w, whose volume is totally inside the geometry
+            glUseProgram(self.compute_shader_1)
+            total_invocations = self.voxel_buffer.shape[0] // 8
+            # invocations are 8 times last session
+            glDispatchCompute(total_invocations // 8, 1, 1)
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+
+
 
         if update_voxel:
             self.voxel_buffer = Refine(self.voxel_buffer).refine()
@@ -450,9 +464,11 @@ class Demo:
         new_attribute_buffer = []
         for step, voxel in enumerate(buffer):
             # if voxel[-1, -1] != 0 or voxel[-1, -2] != 0:
-            if sum(attribute_buffer[step]) != 0:
+            if sum(attribute_buffer[step][:3]) != 0:
                 count += 1
                 new_buffer.append(voxel)
+                # mark w as 1.0 for next computer shader 1
+                attribute_buffer[step][3] = 1.0
                 new_attribute_buffer.append(attribute_buffer[step])
                 index_array[voxel[0, 0] - 1] = count
         for voxel in new_buffer:
