@@ -38,7 +38,7 @@ class DisplayPort:
 
     def __call__(self, *args, **kwargs):
         glfw.make_context_current(self.window)
-        self.demo = demo.Demo(r"C:\Users\cchen\PycharmProjects\VoxelizationAlg\test2.obj", 0.6)
+        self.demo = demo.Demo(r"C:\Users\cchen\PycharmProjects\SPH-prototype-multi-version\models\models for K-S\frame.obj", 0.025)
         glUseProgram(self.demo.render_shader)
         glUniformMatrix4fv(self.demo.projection_loc, 1, GL_FALSE, self.camera.projection)
         glUniformMatrix4fv(self.demo.view_loc, 1, GL_FALSE, self.camera.view)
@@ -145,7 +145,9 @@ class DisplayPort:
 if __name__ == "__main__":
     dp = DisplayPort()
     buffer, offset, attribute_buffer = dp()
+    np.save("buffer.npy", np.vstack([v for v in buffer]))
+    print(offset)
     from ParticleGenerator import ParticleGenerator
-    pg = ParticleGenerator(buffer, offset, dp.demo.voxel_length, dp.demo.voxel_length/6, attribute_buffer)
+    pg = ParticleGenerator(buffer, offset, dp.demo.voxel_length, dp.demo.voxel_length/5, attribute_buffer)
     pg.generate_internal_particle()
 
